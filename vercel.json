@@ -5,5 +5,6 @@
   "installCommand": "npm install",
   "env": {
     "NEXT_PUBLIC_APP_URL": "https://vakmanapp-nl.vercel.app"
-  }
+  },
+  "ignoreCommand": "exit 0"
 }
