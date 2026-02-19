@@ -127,6 +127,31 @@ export interface Invoice {
   created_at: string
 }
 
+export interface OfferteRegel {
+  omschrijving: string
+  aantal: number
+  eenheid: string
+  prijs: number
+  btw_percentage: number
+}
+
+export interface Offerte {
+  id: string
+  company_id: string
+  client_id: string | null
+  offerte_nummer: string
+  status: 'concept' | 'verstuurd' | 'geaccepteerd' | 'afgewezen' | 'vervallen'
+  geldig_tot: string | null
+  regels: OfferteRegel[]
+  subtotaal: number
+  btw_bedrag: number
+  totaal: number
+  btw_percentage: number
+  notities: string | null
+  created_at: string
+  client?: Client
+}
+
 export interface Subscription {
   id: string
   company_id: string | null

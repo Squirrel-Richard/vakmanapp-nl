@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import WebGLBackground from '@/components/shared/WebGLBackground'
 import AppNav from '@/components/shared/AppNav'
 import type { Job, Werkbon } from '@/types/database'
-import { ArrowLeft, Save, RotateCcw, Check, Loader2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Save, RotateCcw, Check, Loader2, AlertTriangle, MessageCircle, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/utils'
 
@@ -24,6 +24,8 @@ export default function WerkbonPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [signed, setSigned] = useState(false)
+  const [savedSuccessfully, setSavedSuccessfully] = useState(false)
+  const [reviewVerzonden, setReviewVerzonden] = useState(false)
   const [form, setForm] = useState({
     werkzaamheden: '',
     materiaal_gebruikt: '',
@@ -129,9 +131,26 @@ export default function WerkbonPage() {
         await supabase.from('jobs').update({ status: 'klaar' }).eq('id', id)
       }
       toast.success('Werkbon opgeslagen!')
-      router.push(`/opdracht/${id}`)
+      setSavedSuccessfully(true)
+      // Don't redirect immediately — show review request first
     }
     setSaving(false)
+  }
+
+  function sendReviewWhatsApp() {
+    const telefoon = (job?.client as { telefoon?: string } | undefined)?.telefoon
+    const naam = (job?.client as { naam?: string } | undefined)?.naam || 'u'
+    if (!telefoon) {
+      toast.error('Geen telefoonnummer bekend voor deze klant')
+      return
+    }
+    const number = telefoon.replace(/[^0-9+]/g, '').replace(/^0/, '31')
+    const text = encodeURIComponent(
+      `Hallo ${naam}! Fijn dat we u konden helpen. Zou u ons een Google Review willen geven? Dat helpt ons enorm! 🙏\n\nhttps://g.page/r/vakmanapp/review`
+    )
+    window.open(`https://wa.me/${number}?text=${text}`, '_blank')
+    setReviewVerzonden(true)
+    toast.success('WhatsApp geopend!')
   }
 
   if (loading) {
@@ -318,19 +337,86 @@ export default function WerkbonPage() {
           </motion.div>
 
           {/* Save button */}
-          <motion.button
-            onClick={saveWerkbon}
-            disabled={saving || !form.werkzaamheden.trim()}
-            whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(99,102,241,0.4)' }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Opslaan...</>
-            ) : (
-              <><Save className="w-4 h-4" /> Werkbon opslaan</>
-            )}
-          </motion.button>
+          {!savedSuccessfully && (
+            <motion.button
+              onClick={saveWerkbon}
+              disabled={saving || !form.werkzaamheden.trim()}
+              whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(99,102,241,0.4)' }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-white rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Opslaan...</>
+              ) : (
+                <><Save className="w-4 h-4" /> Werkbon opslaan</>
+              )}
+            </motion.button>
+          )}
+
+          {/* Review request — shown after successful save */}
+          {savedSuccessfully && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="p-6 rounded-2xl text-center"
+              style={{
+                background: 'rgba(34,197,94,0.06)',
+                border: '1px solid rgba(34,197,94,0.2)',
+                boxShadow: '0 0 30px rgba(34,197,94,0.08)',
+              }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-14 h-14 rounded-full bg-green-400/10 border border-green-400/20 flex items-center justify-center mx-auto mb-4"
+              >
+                <Check className="w-7 h-7 text-green-400" />
+              </motion.div>
+
+              <h3 className="text-white font-bold text-xl mb-1">Werkbon opgeslagen! ✅</h3>
+              <p className="text-text-muted text-sm mb-6">
+                Klant tevreden? Stuur een Google Review verzoek via WhatsApp.
+                <br />
+                <span className="text-xs opacity-70">Reviews = meer klanten. 30 seconden werk.</span>
+              </p>
+
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {[1,2,3,4,5].map(s => (
+                  <Star key={s} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                ))}
+              </div>
+
+              {reviewVerzonden ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center justify-center gap-2 text-green-400 font-medium mb-4"
+                >
+                  <Check className="w-4 h-4" />
+                  Review verzoek verstuurd via WhatsApp!
+                </motion.div>
+              ) : (
+                <motion.button
+                  onClick={sendReviewWhatsApp}
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(37,211,102,0.3)' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 mx-auto px-6 py-3 rounded-xl font-semibold text-white mb-4"
+                  style={{ background: '#25D366', boxShadow: '0 0 15px rgba(37,211,102,0.2)' }}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  📱 WhatsApp Review Sturen
+                </motion.button>
+              )}
+
+              <button
+                onClick={() => router.push(`/opdracht/${id}`)}
+                className="text-sm text-text-muted hover:text-white transition-colors underline underline-offset-2"
+              >
+                Doorgaan zonder review →
+              </button>
+            </motion.div>
+          )}
         </div>
       </main>
     </div>

@@ -10,6 +10,7 @@ import {
   LogOut,
   Plus,
   Wrench,
+  FileText,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/offerte', icon: FileText, label: 'Offertes' },
   { href: '/klanten', icon: Users, label: 'Klanten' },
   { href: '/planning', icon: Calendar, label: 'Planning' },
 ]
