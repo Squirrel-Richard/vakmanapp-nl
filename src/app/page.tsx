@@ -172,7 +172,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, type: 'spring', stiffness: 100 }}
-              className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight"
+              className="text-3xl sm:text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight"
             >
               Stop met
               <br />
@@ -255,14 +255,14 @@ export default function LandingPage() {
                 </div>
 
                 {/* Dashboard preview */}
-                <div className="p-6 min-h-64">
+                <div className="p-6 min-h-64 overflow-x-auto">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-white font-semibold">Opdrachten</h3>
                     <div className="px-3 py-1.5 rounded-lg text-xs text-primary bg-primary/10 border border-primary/20">
                       + Nieuwe opdracht
                     </div>
                   </div>
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-4 gap-3 min-w-[400px]">
                     {['Nieuw', 'Onderweg', 'Klaar', 'Gefactureerd'].map((col, i) => (
                       <div key={col} className="rounded-xl p-3"
                         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
